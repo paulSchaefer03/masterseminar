@@ -1,0 +1,101 @@
+services:
+  neo4j-synthea:
+    container_name: neo4j-synthea
+    image: neo4j:5.25-community
+    ports:
+      - "7475:7474"  # Browser (different port from main demo!)
+      - "7688:7687"  # Bolt (different port from main demo!)
+    environment:
+      NEO4J_AUTH: neo4j/synthea123
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+      NEO4J_apoc_export_file_enabled: 'true'
+      NEO4J_apoc_import_file_enabled: 'true'
+      NEO4J_apoc_import_file_use__neo4j__config: 'true'
+      NEO4J_dbms_security_procedures_unrestricted: 'apoc.*,gds.*'
+      NEO4J_dbms_memory_heap_initial__size: '8G'
+      NEO4J_dbms_memory_heap_max__size: '8G'
+      NEO4J_dbms_memory_pagecache_size: '4G'
+      NEO4J_dbms_directories_import: '/var/lib/neo4j/import'
+    volumes:
+      - neo4j_synthea_data:/data
+      - neo4j_synthea_logs:/logs
+      - ./import:/var/lib/neo4j/import
+      - neo4j_synthea_plugins:/plugins
+    networks:
+      - synthea-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  synthea-etl:
+    container_name: synthea-etl
+    image: python:3.11-slim
+    profiles: ["etl"]  # Nur starten mit: docker compose --profile etl up
+    depends_on:
+      neo4j-synthea:
+        condition: service_healthy
+    volumes:
+      - ./etl:/app
+      - ./etl:/etl  # Mount for module imports
+      - ./neo4j:/neo4j  # Mount for Cypher scripts (setup_notebooks.py needs this)
+      - ./import:/import
+      - ./drugData:/data/drugbank:ro  # DrugBank data (read-only, optional)
+    environment:
+      NEO4J_URI: bolt://neo4j-synthea:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASS: synthea123
+      NEO4J_PASSWORD: synthea123  # Alternative variable name for compatibility
+      PYTHONPATH: /etl  # Add etl to Python path for module imports
+    working_dir: /app
+    networks:
+      - synthea-net
+    command: ["python", "-u", "/etl/run_etl_pipeline.py"]
+
+  comorbidity-analyzer:
+    container_name: comorbidity-analyzer
+    image: python:3.11-slim
+    profiles: ["etl"]  # Nur starten mit: docker compose --profile etl up
+    depends_on:
+      neo4j-synthea:
+        condition: service_healthy
+    volumes:
+      - ./etl:/app
+      - ./etl:/etl  # Mount for module imports
+      - ./drugData:/data/drugbank:ro  # DrugBank data (read-only, optional)
+    environment:
+      NEO4J_URI: bolt://neo4j-synthea:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASS: synthea123
+    working_dir: /app
+    networks:
+      - synthea-net
+    command: sh -c "pip install --no-cache-dir neo4j && python compute_comorbidities.py"
+
+  synthea-notebooks:
+    container_name: synthea-notebooks
+    image: jupyter/datascience-notebook:latest
+    ports:
+      - "8889:8888"  # Different port from main demo!
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./import:/home/jovyan/data
+    environment:
+      JUPYTER_ENABLE_LAB: 'yes'
+      NEO4J_URI: bolt://neo4j-synthea:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: synthea123
+      JUPYTER_TOKEN: synthea
+    networks:
+      - synthea-net
+    command: sh -c "pip install --no-cache-dir -r /home/jovyan/work/requirements.txt && start-notebook.py --NotebookApp.token='synthea'"
+
+networks:
+  synthea-net:
+    driver: bridge
+
+volumes:
+  neo4j_synthea_data:
+  neo4j_synthea_logs:
+  neo4j_synthea_plugins:

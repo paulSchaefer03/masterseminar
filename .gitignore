@@ -1,0 +1,96 @@
+# Neo4j Data and Runtime (all demos)
+**/data/
+**/logs/
+**/plugins/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environment files
+.env
+.env.local
+
+# Synthea Output (large CSV files from generator)
+synthea/output/
+
+# Synthea Build Artifacts (Gradle)
+synthea/.gradle/
+synthea/build/
+synthea/bin/
+synthea/.classpath
+synthea/.project
+synthea/.settings/
+
+# Synthea Generated Version File (platform-specific build number)
+synthea/src/main/resources/version.txt
+
+# Neo4j Demo Synthea Import (Generated CSV files from Synthea)
+neo4j_demo_synthea/import/*.csv
+
+# LaTeX Build Artifacts
+Hausarbeit_Installation_Masterseminiar_Neo4j/build/
+Praesentation_Masterseminar_Neo4j/build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lol
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xmpdata
+*.xmpi
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ETL Logs
+*.log
+
+# IMPORTANT: Do NOT ignore CSV files in social demo!
+# These are small and part of the repository
+!neo4j_demo_social/import/**/*.csv
+
+# DrugBank Data
+drugData/
+
+#Other ignores
+neo4j_demo_synthea/docs/
+neo4j_demo_synthea/import
+neo4j_demo_synthea/import.backup.1764410835/
+.backup/
+.deprecated/
+05_graph_analytics_presentation.ipynb
+*.png
+neo4j_demo_synthea/setup_log.txt

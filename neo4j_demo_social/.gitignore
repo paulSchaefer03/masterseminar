@@ -1,0 +1,45 @@
+# Neo4j Data Directory (created by Docker)
+data/
+
+# Neo4j Logs (created by Docker)
+logs/
+
+# Neo4j Plugins (downloaded by Docker)
+plugins/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environment
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+*.tmp
+*.bak
